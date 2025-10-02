@@ -15,6 +15,13 @@
         <p><strong>Ciudad:</strong> {{ ciudad }}</p>
         <hr>
         <p>Hola, mi nombre es {{ nombre }}, tengo {{ edad }} años y soy de {{ ciudad }}.</p>
+
+        <hr>
+
+        <h2>Contador Interactivo</h2>
+        <p>Contador: {{ contador }}</p>
+        <button @click="incrementar">Incrementar</button>
+        <button @click="decrementar">Decrementar</button>
     </div>
 
     <script src="https://unpkg.com/vue@3"></script>
@@ -28,10 +35,25 @@
                 const edad =   ref(43);
                 const ciudad = ref("Carmen de Patagones");
 
+                const contador = ref(0);
+
+                function incrementar() {
+                    contador.value++;
+                }
+
+                function decrementar() {
+                    // Se añade validación para que el contador no baje de 0.
+                    if (contador.value > 0) {
+                    contador.value--;
+                   }
+                }
                 return {
                     nombre,
                     edad,
-                    ciudad
+                    ciudad, 
+                    contador,
+                    incrementar,
+                    decrementar 
                 };
             }
         }).mount('#app');
