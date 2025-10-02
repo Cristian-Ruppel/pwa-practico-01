@@ -15,26 +15,39 @@
         <p><strong>Ciudad:</strong> {{ ciudad }}</p>
         <hr>
         <p>Hola, mi nombre es {{ nombre }}, tengo {{ edad }} años y soy de {{ ciudad }}.</p>
-
         <hr>
-
         <h2>Contador Interactivo</h2>
         <p>Contador: {{ contador }}</p>
         <button @click="incrementar">Incrementar</button>
         <button @click="decrementar">Decrementar</button>
+        <hr>
+        
+        <h2>Lista de Tareas</h2>
+
+        <input v-model="nuevaTarea" placeholder="Agregar nueva tarea">
+        <button @click="agregarTarea">Agregar Tarea</button>
+
+        <ul>
+            <li v-for="tarea in tareas" :key="tarea.id">
+                <input type="checkbox" v-model="tarea.completada">
+                <span>{{ tarea.texto }}</span>
+            </li>
+        </ul>
+
+        <p><strong>Total de Tareas:</strong> {{ totalTareas }}</p>
+        <p><strong>Tareas Pendientes:</strong> {{ tareasPendientes }}</p>
     </div>
 
     <script src="https://unpkg.com/vue@3"></script>
 
     <script> 
-        const { createApp, ref } = Vue;
+        const { createApp, ref, computed } = Vue;
 
         createApp({
             setup() {
                 const nombre = ref("Cristian Ruppel");
                 const edad =   ref(43);
                 const ciudad = ref("Carmen de Patagones");
-
                 const contador = ref(0);
 
                 function incrementar() {
@@ -42,18 +55,51 @@
                 }
 
                 function decrementar() {
-                    // Se añade validación para que el contador no baje de 0.
                     if (contador.value > 0) {
-                    contador.value--;
-                   }
+                        contador.value--;
+                    }
                 }
+
+                const nuevaTarea = ref('');
+
+                const tareas = ref([
+                    { id: 1, texto: 'Aprender vue.js', completada: false },
+                    { id: 2, texto: 'Hacer el TP 01', completada: true },
+                ]);
+
+                let siguienteId = 3;
+    
+                function agregarTarea() {
+                    if (nuevaTarea.value.trim() !== '') {
+                        tareas.value.push({
+                            id: siguienteId++,
+                            texto: nuevaTarea.value,
+                            completada: false
+                        });
+                        nuevaTarea.value = '';
+                    }
+                }
+
+                const totalTareas = computed(() => {
+                    return tareas.value.length;
+                });
+
+                const tareasPendientes = computed(() => {
+                    return tareas.value.filter(tarea => !tarea.completada).length;
+                });
+
                 return {
                     nombre,
                     edad,
                     ciudad, 
                     contador,
                     incrementar,
-                    decrementar 
+                    decrementar,
+                    nuevaTarea,
+                    tareas,
+                    agregarTarea,
+                    totalTareas,
+                    tareasPendientes
                 };
             }
         }).mount('#app');
