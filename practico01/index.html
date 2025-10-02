@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TP.01-Cristian</title>
+</head>
+
+<body>
+
+    <div id="app">
+        <h1>Cristian Ruppel</h1>
+        <p><strong>Nombre:</strong> {{ nombre }}</p>
+        <p><strong>Edad:</strong> {{ edad }}</p>
+        <p><strong>Ciudad:</strong> {{ ciudad }}</p>
+        <hr>
+        <p>Hola, mi nombre es {{ nombre }}, tengo {{ edad }} años y soy de {{ ciudad }}.</p>
+    </div>
+
+    <script src="https://unpkg.com/vue@3"></script>
+
+    <script> 
+        const { createApp, ref } = Vue;
+
+        createApp({
+            setup() {
+                const nombre = ref("Cristian Ruppel");
+                const edad =   ref(43);
+                const ciudad = ref("Carmen de Patagones");
+
+                return {
+                    nombre,
+                    edad,
+                    ciudad
+                };
+            }
+        }).mount('#app');
+    </script>
+    
+</body>
+</html>
