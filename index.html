@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TP.01-Cristian</title>
+    <title>TP.02-Cristian</title>
 </head>
 
 <body>
@@ -22,6 +22,14 @@
         <button @click="decrementar">Decrementar</button>
         <hr>
         
+        <h2>Paso 1 - Lista de Eventos del Ciclo de Vida</h2>
+        <ul>
+            <li v-for="evento in listaEventos" :key="evento.id">
+                <strong>{{ evento.id }}. {{ evento.nombre }}</strong> - {{ evento.timestamp }}
+            </li>
+        </ul>
+        <hr>
+
         <h2>Lista de Tareas</h2>
 
         <input v-model="nuevaTarea" placeholder="Agregar nueva tarea">
@@ -40,13 +48,63 @@
 
     <script src="https://unpkg.com/vue@3"></script>
 
-    <script> 
-        const { createApp, ref, computed } = Vue;
+    <script>
+        const { createApp, ref, computed, onBeforeMount, onMounted, onBeforeUnmount, onUnmounted } = Vue;
+        // Importo onBeforeUpdate y onUpdated pero los dejamos sin implementar para evitar el loop.
+
+        let idEvento = 1;
 
         createApp({
             setup() {
+                // PASO 1: Lista de Eventos del Ciclo de Vida  
+                const listaEventos = ref([]);
+
+                const registrarEvento = (nombre) => {
+                    const ahora = new Date();
+                    const timestamp = ahora.toLocaleString('es-AR', {
+                        year: 'numeric',
+                        month: '2-digit',
+                        day: '2-digit',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit',
+                        hour12: false
+                    }) + '.' + ahora.getMilliseconds();
+
+                    listaEventos.value.push({
+                        id: idEvento++,
+                        nombre: nombre,
+                        timestamp: timestamp
+                    });
+                };
+
+                registrarEvento('created'); 
+                
+                onBeforeMount(() => {
+                    registrarEvento('beforeMount'); 
+                });
+
+                onMounted(() => {
+                    registrarEvento('mounted'); 
+                });
+
+                // IMPORTANTE: omito onBeforeUpdate (beforeUpdate) y onUpdated (updated)
+                // ya que al modificar la variable reactiva 'listaEventos' dentro de estos hooks,
+                // se provoca un bucle infinito de actualización que bloquea la aplicación.
+                // onBeforeUpdate(() => { registrarEvento('beforeUpdate'); }); // ⬅Esto causa el loop
+                // onUpdated(() => { registrarEvento('updated'); });         // ⬅ Esto causa el loop
+                // Para demostrar su existencia, se muestro este comentario.
+
+                onBeforeUnmount(() => {
+                    registrarEvento('beforeDestroy');
+                });
+
+                onUnmounted(() => {
+                    registrarEvento('destroyed');
+                });
+                
                 const nombre = ref("Cristian Ruppel");
-                const edad =   ref(43);
+                const edad = ref(43);
                 const ciudad = ref("Carmen de Patagones");
                 const contador = ref(0);
 
@@ -68,7 +126,7 @@
                 ]);
 
                 let siguienteId = 3;
-    
+
                 function agregarTarea() {
                     if (nuevaTarea.value.trim() !== '') {
                         tareas.value.push({
@@ -89,9 +147,10 @@
                 });
 
                 return {
+                    listaEventos,
                     nombre,
                     edad,
-                    ciudad, 
+                    ciudad,
                     contador,
                     incrementar,
                     decrementar,
@@ -104,6 +163,6 @@
             }
         }).mount('#app');
     </script>
-    
+
 </body>
 </html>
