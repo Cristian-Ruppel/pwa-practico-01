@@ -4,6 +4,34 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TP.02-Cristian</title>
+    <style>
+        /* Estilos para el Paso 3 */
+        .post-list {
+            flex: 1; 
+            margin-right: 20px;
+        }
+        .comments-section {
+            flex: 1;
+            border-left: 1px solid #ddd;
+            padding-left: 20px;
+        }
+        .post-item {
+            cursor: pointer;
+            padding: 10px;
+            margin-bottom: 5px;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        .post-item:hover {
+            background-color: #f9f9f9;
+        }
+        .post-item.selected {
+            font-weight: bold;
+            background-color: #e0f7fa; 
+            border-color: #00bcd4;
+        }
+    </style>
 </head>
 
 <body>
@@ -46,14 +74,48 @@
         <p><strong>Tareas Pendientes:</strong> {{ tareasPendientes }}</p>
         <hr>
         
+        <h2>Paso 3 - Lista de Posts y Comentarios</h2>
+        
+        <div style="display: flex;">
+            <div class="post-list">
+                <h3>Posts (Click para ver comentarios)</h3>
+                <div v-if="listaPosts.length === 0">Cargando posts...</div>
+                <ul style="list-style-type: none; padding: 0;">
+                    <li v-for="post in listaPosts" :key="post.id" 
+                        @click="cargarComentarios(post.id)"
+                        :class="['post-item', { 'selected': post.id === postSeleccionadoId }]">
+                        <strong>Post #{{ post.id }}</strong>: {{ post.title }}
+                        <p style="font-size: 0.9em; margin: 5px 0 0;">{{ post.body.substring(0, 50) }}...</p>
+                    </li>
+                </ul>
+            </div>
+
+            <div class="comments-section">
+                <h3>Comentarios del Post #{{ postSeleccionadoId || '...' }}</h3>
+                <div v-if="postSeleccionadoId === null">
+                    <p>Selecciona un Post para ver sus comentarios.</p>
+                </div>
+                <div v-else-if="comentariosPost === null">
+                    <p>Cargando comentarios...</p>
+                </div>
+                <div v-else-if="comentariosPost.length === 0">
+                    <p>Este Post no tiene comentarios.</p>
+                </div>
+                <ul v-else style="padding-left: 20px;">
+                    <li v-for="comment in comentariosPost" :key="comment.id" style="margin-bottom: 10px;">
+                        <strong>{{ comment.email }}</strong>: {{ comment.body }}
+                    </li>
+                </ul>
+            </div>
         </div>
+
+    </div>
 
     <script src="https://unpkg.com/vue@3"></script>
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script> 
 
     <script>
         const { createApp, ref, computed, onBeforeMount, onMounted, onBeforeUnmount, onUnmounted } = Vue;
-        // Importo onBeforeUpdate y onUpdated pero los dejo sin implementar para evitar el loop.
 
         let idEvento = 1;
 
@@ -87,9 +149,18 @@
                 onBeforeMount(() => {
                     registrarEvento('beforeMount'); 
                 });
-
-                onMounted(() => {
+                
+                // PASO 3: Ejecuto la carga de posts en onMounted
+                onMounted(async () => {
                     registrarEvento('mounted'); 
+                    
+                    // PASO 3: Uso un bucle for que obtiene los 10 primeros posts 
+                    for (let i = 1; i <= 10; i++) {
+                        const post = await obtenerPost(i);
+                        if (post) {
+                            listaPosts.value.push(post);
+                        }
+                    }
                 });
 
                 // Hooks de Actualización (Omitidos para evitar el loop)
@@ -103,7 +174,6 @@
                     registrarEvento('destroyed');
                 });
                 
-                // Variables originales del TP01
                 const nombre = ref("Cristian Ruppel");
                 const edad = ref(43);
                 const ciudad = ref("Carmen de Patagones");
@@ -147,11 +217,11 @@
                     return tareas.value.filter(tarea => !tarea.completada).length;
                 });
                 
-                //PASO 2: Implementación de Axios
+                // PASO 2: Implementación de Axios
                 
                 const obtenerPost = async (postId) => {
                     try {
-                        const url = `https://jsonplaceholder.typicode.com/posts/${postId}`;
+                        const url = `https://jsonplaceholder.typicode.com/posts/${postId}`; 
                         const response = await axios.get(url);
                         return response.data; 
                     } catch (error) {
@@ -162,7 +232,7 @@
 
                 const obtenerComments = async (postId) => {
                     try {
-                        const url = `https://jsonplaceholder.typicode.com/posts/${postId}/comments`;
+                        const url = `https://jsonplaceholder.typicode.com/posts/${postId}/comments`; 
                         const response = await axios.get(url);
                         return response.data;
                     } catch (error) {
@@ -170,7 +240,20 @@
                         return [];
                     }
                 };
+                
+                // PASO 3: Variables Reactivas y Cargar Comentarios
+                
+                // Creo las listas vacías para posts y comentarios 
+                const listaPosts = ref([]); 
+                const comentariosPost = ref([]); 
+                const postSeleccionadoId = ref(null);
 
+                const cargarComentarios = async (postId) => {
+                    postSeleccionadoId.value = postId; 
+                    comentariosPost.value = null;
+                    
+                    comentariosPost.value = await obtenerComments(postId); 
+                };
 
                 return {
                     listaEventos,
@@ -185,9 +268,11 @@
                     agregarTarea,
                     totalTareas,
                     tareasPendientes,
-                    // Dejo obtenerPost y obtenerComments disponibles por si los necesito después
-                    obtenerPost,
-                    obtenerComments
+                    // Variables y funciones del Paso 3
+                    listaPosts,
+                    comentariosPost,
+                    postSeleccionadoId,
+                    cargarComentarios
                 };
             }
         }).mount('#app');
